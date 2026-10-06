@@ -83,6 +83,7 @@ public final class ClickGuiScreen extends Screen {
     private long openedAt;
     private long closingAt;
     private String hoveredDescription = "";
+    private long lastBlocklistRevision = -1L;
 
     public ClickGuiScreen() {
         this(ModuleCategory.HUD);
@@ -116,6 +117,11 @@ public final class ClickGuiScreen extends Screen {
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        long currentRevision = net.lunacy.visuals.holyworld.HolyWorldLiteApi.getBlocklistRevision();
+        if (lastBlocklistRevision != currentRevision) {
+            lastBlocklistRevision = currentRevision;
+            invalidateModuleCache();
+        }
         if (hudEditor) {
             renderHudEditor(context, mouseX, mouseY);
             return;
@@ -385,6 +391,7 @@ public final class ClickGuiScreen extends Screen {
         LunacyMenuChrome.logo(context, 16, 15, 28);
         LunacyTheme.eyebrow(context, "ЛКМ двигать • ПКМ группа • колесо масштаб • Ctrl+Z отмена", 52, 25);
         ClientRuntime.get().hudLayout().bounds().forEach((id, bounds) -> {
+            if (net.lunacy.visuals.holyworld.HolyWorldLiteApi.isFeatureBlocked(id)) return;
             UiRenderer.roundedBorder(context, bounds.x() - 3, bounds.y() - 3,
                     bounds.width() + 6, bounds.height() + 6, 8, 1,
                     hudSelection.contains(id) || bounds.contains(mouseX, mouseY) ? LunacyTheme.accent() : LunacyTheme.softLine());
@@ -425,6 +432,11 @@ public final class ClickGuiScreen extends Screen {
             }
             if (collapsed.get(category) || !UiRenderer.inside(mx, my, x, y + HEADER_H, PANEL_W, CONTENT_H)) {
                 continue;
+            }
+            if (selected != null && selected.isBlocked()) {
+                selected = null;
+                leavingSettings = null;
+                pageOpening = false;
             }
             if (category == ModuleCategory.SETTINGS) {
                 return clickGlobalSetting(click, category, x, y + HEADER_H, mx, my);
@@ -712,6 +724,20 @@ public final class ClickGuiScreen extends Screen {
     private void finishClose() {
         ClientRuntime.get().config().flush();
         if (minecraft != null) minecraft.gui.setScreen(parent);
+    }
+
+    public void invalidateModuleCache() {
+        moduleCache.clear();
+        globalSettingsCache = null;
+        lastSearch = null;
+        if (selected != null && selected.isBlocked()) {
+            selected = null;
+            leavingSettings = null;
+            pageOpening = false;
+        }
+        if (leavingSettings != null && leavingSettings.isBlocked()) {
+            leavingSettings = null;
+        }
     }
 
     private List<Module> modules(ModuleCategory category) {

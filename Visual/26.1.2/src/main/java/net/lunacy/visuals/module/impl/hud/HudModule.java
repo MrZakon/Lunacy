@@ -26,7 +26,7 @@ public abstract class HudModule extends Module {
 
     @Subscribe
     private void onRender2D(Render2DEvent event) {
-        if (event.context() == null) return;
+        if (event.context() == null || isBlocked()) return;
         beforeRender();
         boolean editor = Minecraft.getInstance().screen instanceof net.lunacy.visuals.gui.ClickGuiScreen screen
                 && screen.isEditingHud();
