@@ -1,0 +1,49 @@
+{
+  "name": "lunacy-launcher",
+  "productName": "Lunacy Launcher",
+  "version": "2.1.0",
+  "description": "Lunacy Visuals — игровой лаунчер Minecraft 2.1.0 с авторизацией lunacyvisual.fun",
+  "type": "module",
+  "main": "src/main/main.js",
+  "author": "Lunacy Visuals",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win nsis portable",
+    "start:debug": "electron . --enable-logging",
+    "logs": "node scripts/show-logs.js"
+  },
+  "devDependencies": {
+    "electron": "^31.3.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "fun.lunacyvisual.launcher",
+    "productName": "Lunacy Launcher",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+	  "scripts/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Lunacy Launcher",
+      "license": "assets/license.txt"
+    }
+  }
+}

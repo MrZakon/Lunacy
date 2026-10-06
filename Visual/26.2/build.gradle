@@ -1,0 +1,137 @@
+import groovy.json.JsonSlurper
+
+plugins {
+    id "net.fabricmc.fabric-loom" version "${loom_version}"
+    id "maven-publish"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    testImplementation platform("org.junit:junit-bom:5.12.2")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+loom {
+    runs {
+        client {
+            client()
+            ideConfigGenerated = true
+            runDir = "run"
+            vmArg "-Dfabric.log.level=info"
+        }
+    }
+
+}
+
+def resourceProperties = [
+        version           : project.version.toString(),
+        minecraft_version : project.minecraft_version.toString(),
+        loader_version    : project.loader_version.toString(),
+        java_version      : project.java_version.toString()
+]
+
+processResources {
+    inputs.properties resourceProperties
+    filesMatching("fabric.mod.json") {
+        expand resourceProperties
+    }
+}
+
+tasks.register("validateResources") {
+    group = "verification"
+    description = "Validates LunacyVisual JSON and paired shader resources."
+    inputs.dir(layout.projectDirectory.dir("src/main/resources"))
+
+    doLast {
+        def resources = layout.projectDirectory.dir("src/main/resources").asFile
+        if (!resources.isDirectory()) {
+            throw new GradleException("Missing src/main/resources")
+        }
+
+        fileTree(resources).matching { include "**/*.json" }.files.each { file ->
+            try {
+                new JsonSlurper().parse(file, "UTF-8")
+            } catch (Exception exception) {
+                throw new GradleException("Invalid JSON resource: ${file}", exception)
+            }
+        }
+
+        // Minecraft treats assets/<namespace>/font/*.json as vanilla font definitions.
+        // Raw MSDF atlas metrics must live elsewhere (for example fonts/ or msdf/), otherwise
+        // the runtime FontManager logs a large "No key providers" resource-pack failure.
+        fileTree(resources).matching { include "assets/*/font/*.json" }.files.each { file ->
+            def font = new JsonSlurper().parse(file, "UTF-8")
+            if (!(font instanceof Map) || !(font.providers instanceof List)) {
+                throw new GradleException("Invalid vanilla font descriptor (MSDF metrics in font/): ${file}")
+            }
+        }
+
+        def core = new File(resources, "assets/lunacyvisuals/shaders/core")
+        if (core.isDirectory()) {
+            fileTree(core).matching { include "*.json" }.files.each { descriptor ->
+                def shader = new JsonSlurper().parse(descriptor, "UTF-8")
+                [vertex: ".vsh", fragment: ".fsh"].each { key, extension ->
+                    if (shader[key] != null) {
+                        def shaderPath = shader[key].toString().replace("lunacyvisuals:", "")
+                        def source = new File(core.parentFile, shaderPath + extension)
+                        if (!source.isFile()) {
+                            throw new GradleException("${descriptor.name} references missing ${source}")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+processResources.dependsOn(tasks.named("validateResources"))
+check.dependsOn(tasks.named("validateResources"))
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = 25
+    options.compilerArgs += ["-Xlint:deprecation", "-Xlint:unchecked"]
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    maxParallelForks = 1
+    def testTemp = layout.buildDirectory.dir("test-tmp")
+    systemProperty "java.io.tmpdir", testTemp.get().asFile.absolutePath
+    doFirst {
+        testTemp.get().asFile.mkdirs()
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            from components.java
+        }
+    }
+}

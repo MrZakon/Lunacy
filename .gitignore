@@ -1,0 +1,28 @@
+# Gradle & Loom caches
+.gradle/
+build/
+bin/
+out/
+gradle-home/
+gradle-tmp/
+run/
+
+# Node & Launcher
+node_modules/
+dist/
+lunacy-session.json
+err.txt
+out.txt
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Logs & temp
+*.log
+hs_err_pid*.log
+.DS_Store
+Thumbs.db

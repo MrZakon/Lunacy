@@ -1,35 +1,103 @@
-# Lunacy
+# Lunacy Client & Launcher (v1.4)
 
-Launcher project for managing mini-projects and modules.
-
-## Structure
-
-```
-Lunacy/
-├── apps/
-│   └── launcher/          # Main launcher application
-├── projects/              # Mini-projects
-├── packages/              # Shared libraries and utilities
-└── docs/                  # Documentation
-```
-
-## Getting Started
-
-### Launcher
-The main launcher application that manages and runs mini-projects.
-
-```bash
-cd apps/launcher
-npm install
-npm start
-```
-
-### Adding Mini-Projects
-Place your mini-projects in the `projects/` directory.
-
-### Shared Packages
-Common utilities and components in `packages/`.
+Комплексный проект модификаций **Lunacy Visuals** и фирменного лаунчера **Lunacy Launcher** для Minecraft. Клиент предлагает продвинутый графический движок, кастомизацию HUD, более 20 визуальных модулей и полную поддержку серверного протокола **HolyWorld LiteAPI (Feature Control)**.
 
 ---
 
-*Lunacy - Your project launcher*
+## 📂 Структура репозитория
+
+```
+Lunacy/
+├── Visual/                     # Исходный код визуального клиента под разные версии
+│   ├── 1.21.11/                # Полная версия для Fabric 1.21.11 (Yarn mappings)
+│   ├── free 1.21.11/           # Бесплатная редакция для Fabric 1.21.11
+│   ├── 26.1.2/                 # Версия для Minecraft 26.1.2 (Mojang mappings)
+│   └── 26.2/                   # Версия для Minecraft 26.2 (Mojang mappings)
+├── Launcher/                   # Фирменный десктопный лаунчер (Electron + Node.js)
+├── .gitignore                  # Глобальные правила исключения кэшей и артефактов сборки
+└── README.md                   # Документация проекта
+```
+
+---
+
+## 🚀 Основные возможности
+
+### 🎨 Lunacy Visuals (Клиент)
+- **Direct-GLSL & MSDF Рендеринг**: Аппаратно-ускоренные шейдерные эффекты, векторные шрифты высокого разрешения без мыла при масштабировании.
+- **Интерактивный ClickGUI & HUD Builder**:
+  - Открытие по умолчанию: клавиша `Right Shift`.
+  - Включение/выключение модулей в 1 клик (ЛКМ).
+  - Контекстные настройки каждого модуля (ПКМ).
+  - Быстрое назначение горячих клавиш (СКМ).
+  - Полноценный визуальный HUD Builder с сеткой 4px, привязками к центру и краям экрана.
+- **Мульти-версионность**:
+  - Поддержка **1.21.11** и **free 1.21.11** на базе Fabric Yarn mappings.
+  - Поддержка современных версий **26.1.2** и **26.2** на базе Mojang official mappings.
+- **Полная интеграция с HolyWorld LiteAPI**:
+  - Регистрация сетевого канала `liteapi:feature-control`.
+  - Динамическая блокировка/разблокировка функционала по команде сервера.
+  - Автоматическое скрытие заблокированных модулей из интерфейса ClickGUI и HUD.
+  - Обработка событий входа (`JOIN`), выхода (`DISCONNECT`) и защита от спама (Rate Limit).
+
+### 🖥️ Lunacy Launcher
+- **Нативный каталог Modrinth 2.0**: Прямая установка модов без сторонних зеркал и ключей, фильтры и сортировка.
+- **3D скин-подиум**: Интерактивная 3D-модель персонажа с реакцией на перемещение курсора мыши.
+- **Starfield Canvas**: Анимированное неоновое поле частиц.
+- **Minecraft SLP Мониторинг**: Встроенный TCP-клиент проверки пинга и онлайна игровых серверов в реальном времени.
+- **Discord Rich Presence**: Интеграция через именованные пайпы без внешних тяжелых библиотек.
+- **Менеджер версий**: Управление JVM-аргументами, памятью, профилями и установкой Fabric.
+
+---
+
+## 🛡️ Модули Lunacy Visuals
+
+1. **Watermark** — Информационный оверлей клиента.
+2. **ArrayList** — Список активных модулей с градиентной анимацией.
+3. **TargetHUD** — Детальная панель состояния выбранной цели/игрока.
+4. **ArmorHUD** — Отображение прочности и зачарований надетой брони.
+5. **Keybinds HUD** — Оверлей активных биндов.
+6. **Custom Crosshair** — Кастомный анимированный прицел.
+7. **Hands & ViewModel** — Настройка положения, масштаба и анимации рук.
+8. **MotionTrails** — Шлейфы и следы движения за персонажем.
+9. **ChinaHat / Halo** — Косметические головные уборы и ореолы.
+10. **Jump & Hit Particles** — Кастомные партиклы ударов и прыжков.
+11. **Ambience / Custom World** — Кастомизация освещения, погоды и времени суток.
+12. **Fullbright / NightVision** — Максимальная видимость в темноте и пещерах.
+13. **Motion Blur & Camera FX** — Кинематографичный блюр в движении и эффекты камеры.
+14. **Custom Scoreboard & BossBar** — Минималистичный и стильный скорборд.
+15. **Custom Chat HUD** — Плавные анимации сообщений и улучшенная читаемость чата.
+16. **HitColor / Damage Flash** — Настраиваемый цвет вспышки урона по сущностям.
+17. **Item Glint & Block Overlay FX** — Улучшенное свечение зачарований и обводка блоков.
+18. **Custom Nametags** — Информативные неймтеги с полоской здоровья и пингом.
+19. **Block Highlight FX** — Шейдерная подсветка выделенного блока.
+20. **Cape & Wings Engine** — Физика плащей и крыльев.
+
+---
+
+## 🛠️ Сборка проектов
+
+### Сборка мода (Visual)
+Для сборки мода требуется **JDK 21** или новее (для 26.x рекомендуется **JDK 25**).
+
+Перейдите в папку нужной версии и выполните:
+```bash
+# Windows
+.\gradlew.bat build
+
+# Linux / macOS
+./gradlew build
+```
+Скомпилированный `.jar` файл будет создан в папке `build/libs/`.
+
+### Сборка лаунчера (Launcher)
+Требуется **Node.js 18+** и **npm**:
+```bash
+cd Launcher
+npm install
+npm run build
+```
+
+---
+
+## 📜 Лицензия
+Проект распространяется для личного и образовательного использования. Все права на Minecraft принадлежат Mojang Studios / Microsoft.

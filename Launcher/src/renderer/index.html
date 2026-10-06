@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+<title>Lunacy Launcher 2.1</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body data-theme="emerald">
+
+<!-- Фоновые анимированные эффекты свечения -->
+<div class="ambient-mesh" id="ambient-mesh" aria-hidden="true">
+	<div class="ambient-mesh__blob ambient-mesh__blob--1"></div>
+	<div class="ambient-mesh__blob ambient-mesh__blob--2"></div>
+	<div class="ambient-mesh__grid"></div>
+</div>
+<canvas id="starfield-canvas" class="starfield-canvas" aria-hidden="true"></canvas>
+
+<!-- Оверлей перетаскивания файлов Drag & Drop -->
+<div class="drop-overlay" id="drop-overlay" aria-hidden="true" hidden>
+	<div class="drop-overlay__card">
+		<div class="drop-overlay__icon">📦</div>
+		<div class="drop-overlay__title">Перетащите файлы для быстрой установки</div>
+		<div class="drop-overlay__hint">Моды (.jar), ресурспаки (.zip) или шейдеры будут скопированы в активную сборку</div>
+	</div>
+</div>
+
+
+<div class="titlebar">
+	<div class="titlebar__title">
+		<span class="logo-dot"></span>
+		<b>Lunacy Launcher</b>
+		<span class="badge badge--cyan" id="app-version">v2.1.0</span>
+		<div class="net-pill" id="net-indicator" title="Статус подключения к серверам"><i class="net-dot"></i> <span>Online</span></div>
+	</div>
+	<div class="titlebar__buttons">
+		<button class="winbtn" id="btn-min" title="Свернуть">&#8211;</button>
+		<button class="winbtn" id="btn-max" title="Развернуть">&#9633;</button>
+		<button class="winbtn winbtn--danger" id="btn-close" title="Закрыть">&#10005;</button>
+	</div>
+</div>
+
+<!-- ================================================= АВТОРИЗАЦИЯ -->
+<section class="auth" id="screen-auth">
+	<div class="auth__card">
+		<div class="auth__brand">
+			<span class="logo-dot logo-dot--big"></span>
+			<div>
+				<div class="auth__name">LUNACY <b>VISUALS</b></div>
+				<div class="eyebrow">launcher 2.1.0</div>
+			</div>
+		</div>
+
+		<div class="tabs">
+			<button class="tab is-active" data-authtab="login">Вход</button>
+			<button class="tab" data-authtab="register">Регистрация</button>
+		</div>
+
+		<form class="form" id="form-login">
+			<label class="field">
+				<span class="field__label">Логин или e-mail</span>
+				<input class="input" id="login-user" autocomplete="username" placeholder="Твой ник или email" required />
+			</label>
+			<label class="field">
+				<span class="field__label">Пароль</span>
+				<input class="input" id="login-pass" type="password" autocomplete="current-password" placeholder="••••••••" required />
+			</label>
+			<label class="check"><input type="checkbox" id="login-remember" checked /> Запомнить меня</label>
+			<p class="alert" id="login-error" hidden></p>
+			<button class="btn btn--primary btn--block" id="btn-login" type="submit">Войти в лаунчер</button>
+		</form>
+
+		<form class="form" id="form-register" hidden>
+			<label class="field">
+				<span class="field__label">Никнейм</span>
+				<input class="input" id="reg-user" placeholder="3-32 символа" required />
+			</label>
+			<label class="field">
+				<span class="field__label">E-mail</span>
+				<input class="input" id="reg-mail" type="email" placeholder="mail@example.com" required />
+			</label>
+			<label class="field">
+				<span class="field__label">Пароль</span>
+				<input class="input" id="reg-pass" type="password" placeholder="Минимум 6 символов" required />
+			</label>
+			<p class="alert" id="reg-error" hidden></p>
+			<button class="btn btn--primary btn--block" type="submit">Создать аккаунт</button>
+		</form>
+
+		<div class="auth__links">
+			<a href="#" data-open="register">Регистрация на сайте</a>
+			<span class="dot">·</span>
+			<a href="#" data-open="buy">Купить подписку</a>
+			<span class="dot">·</span>
+			<a href="#" data-open="support">Поддержка</a>
+		</div>
+	</div>
+</section>
+
+<!-- ================================================= ОСНОВНОЙ ЭКРАН -->
+<section class="shell" id="screen-app" hidden>
+	<aside class="sidebar">
+		<div class="user">
+			<div class="user__avatar" id="user-initial">L</div>
+			<div class="user__meta">
+				<div class="user__nick" id="nick">—</div>
+				<div class="user__badges">
+					<span class="badge badge--tier" id="tier-badge-side">FREE</span>
+					<span class="user__plan muted" id="plan">—</span>
+				</div>
+			</div>
+			<button class="btn btn--tiny btn--ghost user__btn-site" id="btn-cabinet" title="Открыть личный кабинет lunacyvisual.fun">Кабинет ↗</button>
+		</div>
+
+		<nav class="nav-list">
+			<button class="nav is-active" data-view="play">
+				<svg class="nav__icon" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+				<span>Играть</span>
+			</button>
+			<button class="nav" data-view="accounts">
+				<svg class="nav__icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+				<span>Аккаунты</span>
+			</button>
+			<button class="nav" data-view="versions">
+				<svg class="nav__icon" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+				<span>Менеджер версий</span>
+			</button>
+			<button class="nav" data-view="workshop">
+				<svg class="nav__icon" viewBox="0 0 24 24"><path fill="currentColor" d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5a2.5 2.5 0 0 0-5 0V5H4c-1.1 0-1.99.9-1.99 2v3.8H3.5c1.49 0 2.7 1.21 2.7 2.7s-1.21 2.7-2.7 2.7H2V20c0 1.1.9 2 2 2h3.8v-1.5c0-1.49 1.21-2.7 2.7-2.7s2.7 1.21 2.7 2.7V22H17c1.1 0 2-.9 2-2v-4h1.5a2.5 2.5 0 0 0 0-5z"/></svg>
+				<span>Мастерская</span>
+			</button>
+			<button class="nav" data-view="screenshots">
+				<svg class="nav__icon" viewBox="0 0 24 24"><path fill="currentColor" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+				<span>Галерея</span>
+			</button>
+			<button class="nav" data-view="console">
+				<svg class="nav__icon" viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z"/></svg>
+				<span>Консоль</span>
+			</button>
+			<button class="nav" data-view="settings">
+				<svg class="nav__icon" viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+				<span>Настройки</span>
+			</button>
+		</nav>
+
+		<div class="sidebar__foot">
+			<!-- Плашка Telegram -->
+			<div class="tg-chip" id="tg-banner" title="Перейти в Telegram-канал">
+				<div class="tg-chip__icon">
+					<svg viewBox="0 0 24 24" width="18" height="18">
+						<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+					</svg>
+				</div>
+				<div class="tg-chip__content">
+					<div class="tg-chip__title">Наш тгк снесли!</div>
+					<div class="tg-chip__desc">Вот новый — <span class="tg-chip__tag">@LunacyVisual</span></div>
+					<div class="tg-chip__action">Подпишитесь! ↗</div>
+				</div>
+			</div>
+
+			<div class="update-chip" id="update-chip" hidden>
+				<div class="update-chip__row">
+					<span id="update-text">Проверка обновления…</span>
+					<span class="pill pill--green" id="update-percent" hidden>0%</span>
+				</div>
+				<div class="progress" id="update-bar-wrap" hidden><i id="update-bar"></i></div>
+				<div class="update-chip__row">
+					<button class="btn btn--small btn--primary" id="btn-update-download" hidden>Скачать</button>
+					<button class="btn btn--small" id="btn-update-install" hidden>Установить</button>
+					<button class="btn btn--small btn--ghost" id="btn-update-retry" hidden>Повторить</button>
+				</div>
+			</div>
+			<button class="btn btn--small btn--ghost btn--block" id="btn-logout">Выйти из аккаунта</button>
+		</div>
+	</aside>
+
+	<main class="content">
+
+		<!-- ---------------------------------------- 1. ИГРАТЬ (PLAY) -->
+		<section class="view is-active" data-view="play">
+			<div class="play-hero">
+				<div class="play-hero__bg"></div>
+				<div class="play-hero__layout">
+					<div class="play-hero__content">
+						<div class="row row--wrap play-hero__tags">
+							<span class="badge badge--glow" id="tier-badge">FREE СБОРКА</span>
+							<span class="badge badge--soft">Visuals Only</span>
+							<span class="badge badge--soft">Fabric 1.21.11 / 26.2</span>
+							<span class="badge badge--soft">v2.1.0</span>
+						</div>
+						<h1 class="play-hero__title">Lunacy <span class="grad-text">Visuals</span></h1>
+						<p class="muted play-hero__sub" id="hero-sub">Загрузчик Fabric · Полный визуальный стек: свет, bloom, атмосфера и адаптивный FPS</p>
+					</div>
+
+					<!-- 3D скин-подиум персонажа -->
+					<div class="skin-podium" id="skin-podium" title="Наведите курсор для интерактивного осмотра">
+						<div class="skin-stage" id="skin-stage">
+							<div class="skin-model" id="skin-model">
+								<img class="skin-model__img" id="skin-full-body" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 128'><rect width='64' height='128' rx='8' fill='%23112015'/><rect x='16' y='16' width='32' height='32' rx='4' fill='%2334d399'/><rect x='16' y='52' width='32' height='40' rx='4' fill='%2310b981'/><rect x='4' y='52' width='10' height='36' rx='3' fill='%23059669'/><rect x='50' y='52' width='10' height='36' rx='3' fill='%23059669'/><rect x='18' y='94' width='12' height='32' rx='3' fill='%23047857'/><rect x='34' y='94' width='12' height='32' rx='3' fill='%23047857'/></svg>" alt="Скин игрока" />
+								<div class="skin-model__shadow"></div>
+							</div>
+							<div class="skin-pedestal">
+								<div class="pedestal-ring pedestal-ring--outer"></div>
+								<div class="pedestal-ring pedestal-ring--inner"></div>
+								<div class="pedestal-glow"></div>
+							</div>
+						</div>
+						<div class="skin-nick-badge" id="skin-nick-badge">Скин игрока</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="panel panel--warn" id="free-banner" hidden>
+				<div class="panel__info">
+					<div class="panel__title">Доступна бесплатная версия (FREE)</div>
+					<div class="muted small">Премиум-мод с расширенными визуалами и пресетами заблокирован. Оформи подписку для полного доступа:</div>
+				</div>
+				<button class="btn btn--primary" id="btn-buy">Купить подписку</button>
+			</div>
+
+			<!-- Центральная консоль запуска -->
+			<div class="launch-center">
+				<div class="launch-grid">
+					<!-- Карточка аккаунта -->
+					<div class="launch-card">
+						<div class="launch-card__head">
+							<span class="launch-card__label">Игровой профиль</span>
+							<span class="pill pill--green" id="play-account-badge">Готов</span>
+						</div>
+						<div class="launch-player">
+							<div class="player-avatar-box">
+								<img class="player-avatar-img" id="play-avatar" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231a261c'/><circle cx='16' cy='16' r='10' fill='%2335d06d'/></svg>" alt="" />
+							</div>
+							<div class="launch-player__meta">
+								<select class="input input--select-hero" id="play-account"></select>
+								<div class="muted small" id="play-account-hint">Выбери аккаунт для входа</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Карточка сборки -->
+					<div class="launch-card">
+						<div class="launch-card__head">
+							<span class="launch-card__label">Выбранная версия игры</span>
+							<button class="btn btn--tiny btn--ghost" id="btn-quick-manage-ver">Все сборки ▾</button>
+						</div>
+						<div class="launch-version">
+							<div class="version-badge-icon" id="play-ver-icon">F</div>
+							<div class="launch-version__meta">
+								<select class="input input--select-hero" id="play-version"></select>
+								<div class="muted small" id="play-version-hint">Сборка готова к запуску</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Большая кнопка запуска -->
+				<div class="launch-action">
+					<button class="btn btn--play" id="btn-play">
+						<span class="btn--play__glow"></span>
+						<span class="btn--play__inner">
+							<svg class="btn--play__icon" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+							<span>ИГРАТЬ</span>
+						</span>
+					</button>
+					<div class="game-status-box" id="game-status-box">
+						<span class="status-indicator"></span>
+						<span class="status-text" id="game-state">Игра не запущена</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ---------------------------------------- 2. АККАУНТЫ (ACCOUNTS) -->
+		<section class="view" data-view="accounts">
+			<div class="view-head">
+				<h2>Менеджер аккаунтов</h2>
+				<p class="muted">Выбирай оффлайн-ник для пиратских серверов или войди по официальной лицензии Microsoft для игры на любых серверах.</p>
+			</div>
+
+			<div class="cards">
+				<div class="card">
+					<h3>Добавить Offline-ник</h3>
+					<p class="muted small">Пиратский ник без пароля (любые 3–16 символов).</p>
+					<form class="row row--add" id="form-account">
+						<input class="input" id="account-nick" placeholder="Например: Steve" maxlength="16" />
+						<button class="btn btn--primary" type="submit">Добавить</button>
+					</form>
+					<p class="alert" id="account-error" hidden></p>
+				</div>
+
+				<div class="card card--accent">
+					<h3>Лицензия Microsoft / Xbox Live</h3>
+					<p class="muted small">Безопасный вход по коду (Device Code). Нужна купленная игра Minecraft.</p>
+					<button class="btn btn--primary" id="btn-ms-login">Войти по лицензии Microsoft</button>
+
+					<div class="subcard" id="ms-box" hidden>
+						<p class="muted">Открой в браузере <a href="#" id="ms-link">microsoft.com/link</a> и введи код:</p>
+						<div class="code" id="ms-code">—</div>
+						<div class="row">
+							<button class="btn btn--tiny btn--primary" id="btn-ms-copy">Копировать код</button>
+							<button class="btn btn--tiny btn--ghost" id="btn-ms-cancel">Отмена</button>
+						</div>
+						<p class="muted small" id="ms-status">Ожидаю подтверждения в браузере…</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="card__head">
+					<h3>Сохранённые аккаунты</h3>
+					<span class="pill" id="account-count">0 аккаунтов</span>
+				</div>
+				<div class="account-grid" id="account-list"></div>
+			</div>
+		</section>
+
+		<!-- ---------------------------------------- 3. МЕНЕДЖЕР ВЕРСИЙ (VERSIONS) -->
+		<section class="view" data-view="versions">
+			<div class="view-head">
+				<h2>Менеджер версий и сборок</h2>
+				<p class="muted">У каждой сборки своя изолированная папка для модов, ресурспаков и конфигов. Библиотеки и ассеты не дублируются.</p>
+			</div>
+
+			<div class="cards">
+				<!-- Виджет 1: Сборка с визуалом -->
+				<div class="card card--accent widget">
+					<div class="widget__art art art--lunacy"><span class="art__tag" id="lun-art-tag">Lunacy Visuals</span></div>
+					<div class="card__head">
+						<h3 id="lun-card-title">Сборка Lunacy Visuals</h3>
+						<span class="pill pill--green" id="lun-active-pill" hidden>используется</span>
+					</div>
+					<p class="muted small" id="lun-loader">Загрузчик Fabric · Официальный мод Lunacy Visuals</p>
+					<button class="btn btn--pick" id="btn-lun-pick">
+						<span class="btn__label">Версия игры</span>
+						<span class="btn__value" id="lun-mc-label">выбери версию</span>
+						<span class="btn__chev">▾</span>
+					</button>
+					<div class="row row--wrap">
+						<button class="btn btn--primary" id="btn-lun-install">Установить / Обновить</button>
+						<button class="btn btn--ghost" id="btn-lun-restore" title="Восстановить файлы визуала (скачать заново с сервера, если удалили)">Восстановить визуал ⟳</button>
+						<button class="btn" id="btn-lun-activate">Использовать</button>
+					</div>
+					<div class="progress progress--idle" id="progress-lunacy"><i></i></div>
+					<p class="muted small" id="lun-hint">Версии синхронизируются с сервером lunacyvisual.fun</p>
+
+					<div class="subcard subcard--off" id="lun-locked" hidden>
+						<b>Без подписки доступна только бесплатная сборка</b>
+						<p class="muted small" style="margin: 4px 0 8px;">Оформи подписку на сайте или введи код активации:</p>
+						<div class="row">
+							<button class="btn btn--tiny btn--primary" id="btn-buy-2">Купить подписку</button>
+						</div>
+						<form class="row row--add" id="form-redeem">
+							<input class="input" id="redeem-code" placeholder="Код активации" />
+							<button class="btn btn--tiny" id="btn-redeem" type="submit">Активировать</button>
+						</form>
+					</div>
+				</div>
+
+				<!-- Виджет 2: Обычные версии -->
+				<div class="card widget">
+					<div class="widget__art art art--vanilla" id="ver-art"><span class="art__tag" id="ver-art-tag">Vanilla</span></div>
+					<div class="card__head">
+						<h3>Обычные версии Minecraft</h3>
+						<button class="btn btn--tiny btn--ghost" id="btn-ver-refresh">Обновить список</button>
+					</div>
+					<div class="segmented" id="ver-kind">
+						<button class="seg is-active" data-kind="vanilla">Vanilla</button>
+						<button class="seg" data-kind="fabric">Fabric</button>
+						<button class="seg" data-kind="forge">Forge</button>
+					</div>
+					<button class="btn btn--pick" id="btn-ver-pick">
+						<span class="btn__label">Версия игры</span>
+						<span class="btn__value" id="ver-mc-label">выбери версию</span>
+						<span class="btn__chev">▾</span>
+					</button>
+					<label class="field" id="ver-build-wrap" hidden>
+						<span class="field__label">Версия загрузчика (Loader Build)</span>
+						<select class="input" id="ver-build"></select>
+					</label>
+					<label class="check"><input type="checkbox" id="ver-snapshots" /> Показывать экспериментальные снапшоты</label>
+					<button class="btn btn--primary" id="btn-ver-install">Установить сборку</button>
+					<div class="progress progress--idle" id="progress-version"><i></i></div>
+					<p class="muted small" id="ver-hint">Выбери загрузчик и нужную версию</p>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="card__head">
+					<div>
+						<h3>Установленные сборки</h3>
+						<p class="muted small" id="ver-health">Управляй сборками: открывай папки, настраивай моды или дублируй готовые конфигурации.</p>
+					</div>
+					<div class="row">
+						<button class="btn btn--small btn--ghost" id="btn-ver-verify">Проверить целостность</button>
+					</div>
+				</div>
+				<div class="list" id="version-list"></div>
+			</div>
+		</section>
+
+		<!-- ---------------------------------------- 4. МАСТЕРСКАЯ (WORKSHOP) -->
+		<section class="view" data-view="workshop">
+			<div class="view-head">
+				<h2>Мастерская контента</h2>
+				<p class="muted">Моды, ресурспаки и шейдеры из официального каталога <b>Modrinth</b> с прямой установкой в нужную сборку.</p>
+			</div>
+
+			<div class="card">
+				<div class="row row--wrap row--between">
+					<div class="segmented" id="cat-kind">
+						<button class="seg is-active" data-kind="mod">🧩 Моды</button>
+						<button class="seg" data-kind="resourcepack">🎨 Ресурспаки</button>
+						<button class="seg" data-kind="shader">🔮 Шейдеры</button>
+					</div>
+
+					<div class="row row--add">
+						<label class="field" style="margin: 0;">
+							<select class="input input--target-select" id="cat-target" title="Сборка, в которую ставить файлы"></select>
+						</label>
+						<button class="btn btn--small btn--ghost" id="btn-open-dir-2" title="Открыть папку текущей сборки">Папка ↗</button>
+					</div>
+				</div>
+
+				<div class="cat-searchbar">
+					<div class="cat-searchbar__input-wrap">
+						<svg class="search-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+						<input class="input input--search" id="cat-query" placeholder="Поиск модов, ресурспаков и шейдеров…" />
+					</div>
+					<select class="input input--slim" id="cat-mc" title="Версия Minecraft"></select>
+					<select class="input input--slim" id="cat-loader" title="Загрузчик"></select>
+					<select class="input input--slim" id="cat-sort" title="Сортировка">
+						<option value="downloads">По популярности</option>
+						<option value="relevance">По релевантности</option>
+						<option value="updated">Недавно обновлённые</option>
+						<option value="newest">Новые</option>
+					</select>
+					<button class="btn btn--primary" id="btn-cat-search">Найти</button>
+				</div>
+
+				<!-- Теги категорий -->
+				<div class="category-pills" id="cat-categories">
+					<button class="cat-pill is-active" data-cat="all">Все</button>
+					<button class="cat-pill" data-cat="optimization">Оптимизация</button>
+					<button class="cat-pill" data-cat="decoration">Графика</button>
+					<button class="cat-pill" data-cat="utility">Утилиты</button>
+					<button class="cat-pill" data-cat="equipment">Интерфейс</button>
+					<button class="cat-pill" data-cat="adventure">Приключения</button>
+					<button class="cat-pill" data-cat="technology">Технологии</button>
+					<button class="cat-pill" data-cat="library">Библиотеки</button>
+				</div>
+
+				<div class="progress progress--idle" id="progress-catalog"><i></i></div>
+				<div class="mgrid" id="catalog-list"></div>
+			</div>
+
+			<div class="card">
+				<div class="card__head">
+					<div>
+						<h3>Установленный контент в выбранной сборке</h3>
+						<p class="muted small">Включай и выключай моды одним кликом (.jar.disabled) без удаления файлов</p>
+					</div>
+					<div class="row">
+						<span class="pill" id="content-count">0 файлов</span>
+						<button class="btn btn--small btn--ghost" id="btn-import-file" title="Выбрать файл .jar, .zip для добавления в сборку">Импорт файла +</button>
+					</div>
+				</div>
+				<div class="list" id="content-list"></div>
+			</div>
+		</section>
+
+		<!-- ---------------------------------------- 5. СКРИНШОТЫ (SCREENSHOTS) -->
+		<section class="view" data-view="screenshots">
+			<div class="view-head">
+				<h2>Галерея скриншотов</h2>
+				<p class="muted">Все внутриигровые снимки экрана ваших сборок с предпросмотром, датой съёмки и быстрым экспортом.</p>
+			</div>
+
+			<div class="card">
+				<div class="row row--wrap row--between">
+					<div class="row">
+						<label class="field" style="margin: 0;">
+							<select class="input input--target-select" id="sc-target" title="Сборка"></select>
+						</label>
+						<span class="pill" id="sc-count">0 снимков</span>
+					</div>
+					<div class="row">
+						<button class="btn btn--small btn--ghost" id="btn-sc-refresh">Обновить ⟳</button>
+						<button class="btn btn--small btn--ghost" id="btn-sc-folder">Папка со снимками ↗</button>
+					</div>
+				</div>
+
+				<div class="sc-grid" id="sc-grid">
+					<div class="empty-hint">В этой сборке пока нет скриншотов. Нажмите F2 в игре, чтобы сделать первый снимок!</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ---------------------------------------- 6. КОНСОЛЬ (CONSOLE) -->
+		<section class="view" data-view="console">
+			<div class="view-head">
+				<h2>Консоль и диагностика</h2>
+				<p class="muted">Полный журнал лаунчера и игровой сессии. Автоматический анализ причин вылетов и ошибок.</p>
+			</div>
+
+			<!-- Блок краш-помощника (показывается при вылете) -->
+			<div class="crash-card" id="crash-assistant" hidden>
+				<div class="crash-card__icon">⚠</div>
+				<div class="crash-card__body">
+					<div class="crash-card__title" id="crash-title">Игра закрылась с ошибкой</div>
+					<div class="crash-card__desc" id="crash-desc">Анализирую последние строки лога…</div>
+					<div class="crash-card__actions">
+						<button class="btn btn--small btn--primary" id="btn-crash-fix">Починить автоматически</button>
+						<button class="btn btn--small btn--ghost" id="btn-crash-copy">Скопировать причину</button>
+					</div>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="row row--wrap row--between">
+					<div class="row row--add">
+						<input class="input input--slim" id="log-filter" placeholder="Фильтр по слову…" />
+						<div class="segmented">
+							<button class="seg is-active" id="log-tab-all">Все</button>
+							<button class="seg" id="log-tab-game">Игра</button>
+							<button class="seg" id="log-tab-err">Ошибки</button>
+						</div>
+					</div>
+
+					<div class="row">
+						<label class="check"><input type="checkbox" id="log-autoscroll" checked /> Автоскролл</label>
+						<button class="btn btn--small" id="btn-log-copy">Копировать всё</button>
+						<button class="btn btn--small btn--ghost" id="btn-log-file">Файл логов</button>
+						<button class="btn btn--small btn--ghost" id="btn-log-clear">Очистить</button>
+					</div>
+				</div>
+
+				<div class="console" id="log-view"></div>
+				<p class="muted small" id="log-hint">Строк: 0</p>
+			</div>
+		</section>
+
+		<!-- ---------------------------------------- 6. НАСТРОЙКИ (SETTINGS) -->
+		<section class="view" data-view="settings">
+			<div class="view-head">
+				<h2>Настройки лаунчера и игры</h2>
+				<p class="muted">Тонкая настройка Java, выделения памяти, графических адаптеров, параметров экрана и внешнего вида.</p>
+			</div>
+
+			<div class="settings-tabs">
+				<button class="tab is-active" data-settab="game">🎮 Игра и Экран</button>
+				<button class="tab" data-settab="java">⚡ Java и ОЗУ</button>
+				<button class="tab" data-settab="storage">📁 Хранилище и Кэш</button>
+				<button class="tab" data-settab="appearance">🎨 Интерфейс</button>
+				<button class="tab" data-settab="network">🌐 Сеть и Зеркала</button>
+				<button class="tab" data-settab="diagnostics">📊 Диагностика ПК</button>
+			</div>
+
+			<!-- Секция 1: Игра и Экран -->
+			<div class="settings-pane is-active" data-setpane="game">
+				<div class="card">
+					<h3>Разрешение экрана</h3>
+					<div class="row row--wrap" style="margin-bottom: 8px;">
+						<button class="btn btn--small btn--res" data-w="1280" data-h="720">1280×720 (HD)</button>
+						<button class="btn btn--small btn--res" data-w="1920" data-h="1080">1920×1080 (Full HD)</button>
+						<button class="btn btn--small btn--res" data-w="2560" data-h="1440">2560×1440 (2K)</button>
+						<button class="btn btn--small btn--res" data-w="3840" data-h="2160">3840×2160 (4K)</button>
+					</div>
+					<div class="grid">
+						<label class="field"><span class="field__label">Ширина окна</span><input class="input" id="set-w" type="number" min="640" /></label>
+						<label class="field"><span class="field__label">Высота окна</span><input class="input" id="set-h" type="number" min="480" /></label>
+						<label class="field">
+							<span class="field__label">После старта игры</span>
+							<select class="input" id="set-after">
+								<option value="hide">Свернуть лаунчер</option>
+								<option value="close">Закрыть лаунчер</option>
+								<option value="keep">Оставить открытым</option>
+							</select>
+						</label>
+					</div>
+					<label class="check"><input type="checkbox" id="set-fs" /> Полноэкранный режим (Fullscreen)</label>
+				</div>
+
+				<div class="card" id="gpu-card">
+					<div class="card__head">
+						<h3>Видеокарта для игры</h3>
+						<span class="pill" id="gpu-badge">GPU</span>
+					</div>
+					<p class="muted small">На ноутбуках с двумя видеокартами принудительно активирует дискретный GPU (NVIDIA / AMD).</p>
+					<select class="input" id="gpu-select"></select>
+				</div>
+
+				<div class="card">
+					<h3>Автоподключение к серверу (опционально)</h3>
+					<p class="muted small">Если заполнено, Minecraft сразу подключится к указанному серверу при старте.</p>
+					<input class="input" id="set-autoconnect" placeholder="Например: mc.hypixel.net или play.server.ru:25565" />
+				</div>
+			</div>
+
+			<!-- Секция 2: Java и ОЗУ -->
+			<div class="settings-pane" data-setpane="java">
+				<div class="card">
+					<div class="card__head">
+						<h3>Выделение оперативной памяти (RAM)</h3>
+						<span class="pill pill--green" id="ram-label">4 ГБ</span>
+					</div>
+					<input class="range" id="set-ram" type="range" min="1" max="16" step="1" value="4" />
+					<div class="row row--wrap" style="margin-top: 6px;">
+						<button class="btn btn--tiny btn--ram" data-gb="2">2 ГБ</button>
+						<button class="btn btn--tiny btn--ram" data-gb="4">4 ГБ</button>
+						<button class="btn btn--tiny btn--ram" data-gb="6">6 ГБ</button>
+						<button class="btn btn--tiny btn--ram" data-gb="8">8 ГБ</button>
+						<button class="btn btn--tiny btn--ram" data-gb="12">12 ГБ</button>
+						<button class="btn btn--tiny btn--ram btn--primary" id="btn-ram-rec">Рекомендовано</button>
+					</div>
+					<p class="muted small" id="ram-total">В ПК: 16 ГБ всего, свободно 8 ГБ</p>
+				</div>
+
+				<div class="card">
+					<div class="card__head">
+						<h3>Среда выполнения Java</h3>
+						<button class="btn btn--tiny btn--ghost" id="btn-java-refresh">Пересканировать</button>
+					</div>
+					<p class="muted small">Лаунчер автоматически подбирает нужную мажорную версию Java под каждый профиль.</p>
+					<div class="row row--add">
+						<select class="input" id="java-select"></select>
+					</div>
+					<div class="row row--add">
+						<input class="input" id="set-java" placeholder="Путь к javaw.exe (пусто — автоматический подбор)" />
+						<button class="btn btn--small" id="btn-pick-java">Выбрать файл</button>
+					</div>
+					<div class="tip-box">
+						<b>Справка по версиям Java:</b> Minecraft 1.16 и старее — Java 8; 1.17–1.20.4 — Java 17; 1.20.5+ — Java 21.
+					</div>
+				</div>
+
+				<div class="card">
+					<div class="card__head">
+						<h3>Аргументы JVM</h3>
+						<div class="row">
+							<button class="btn btn--tiny btn--ghost btn--jvm" data-jvm="-XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -Dfile.encoding=UTF-8">Стандартный G1GC</button>
+							<button class="btn btn--tiny btn--ghost btn--jvm" data-jvm="-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dfile.encoding=UTF-8">Aikar's Flags (FPS)</button>
+							<button class="btn btn--tiny btn--ghost btn--jvm" data-jvm="-XX:+UseZGC -XX:+UnlockExperimentalVMOptions -Dfile.encoding=UTF-8">ZGC (Низкая задержка)</button>
+						</div>
+					</div>
+					<textarea class="input" id="set-jvm" rows="3" placeholder="-XX:+UseG1GC -Dfile.encoding=UTF-8"></textarea>
+				</div>
+			</div>
+
+			<!-- Секция 3: Хранилище и Кэш -->
+			<div class="settings-pane" data-setpane="storage">
+				<div class="card">
+					<h3>Папка игры (.lunacy)</h3>
+					<p class="muted small">Здесь хранятся все сборки, общие библиотеки, текстуры и сейвы.</p>
+					<div class="row row--add">
+						<input class="input" id="set-dir" />
+						<button class="btn btn--small" id="btn-pick-dir">Изменить</button>
+						<button class="btn btn--small btn--ghost" id="btn-open-dir">Открыть в Проводнике</button>
+					</div>
+				</div>
+
+				<div class="card">
+					<h3>Очистка дискового пространства</h3>
+					<p class="muted small">Удаление временных файлов загрузок (.part), старых логов и временного кэша.</p>
+					<div class="row row--wrap">
+						<button class="btn btn--small btn--ghost" id="btn-clean-cache">Очистить кэш загрузок</button>
+						<button class="btn btn--small btn--ghost" id="btn-clean-logs">Очистить старые логи</button>
+						<button class="btn btn--small btn--danger" id="btn-clean-all">Полная очистка кэша</button>
+					</div>
+					<p class="muted small" id="storage-clean-hint"></p>
+				</div>
+			</div>
+
+			<!-- Секция 4: Внешний вид -->
+			<div class="settings-pane" data-setpane="appearance">
+				<div class="card">
+					<h3>Цветовая тема (Акцент)</h3>
+					<div class="theme-picker" id="theme-picker">
+						<button class="theme-btn theme-btn--emerald is-active" data-theme="emerald"><span>Изумруд Lunacy</span></button>
+						<button class="theme-btn theme-btn--mint" data-theme="mint"><span>Кибер-мята</span></button>
+						<button class="theme-btn theme-btn--violet" data-theme="violet"><span>Сайт (Фиолетовый)</span></button>
+						<button class="theme-btn theme-btn--cyan" data-theme="cyan"><span>Ледяной Неон</span></button>
+						<button class="theme-btn theme-btn--amber" data-theme="amber"><span>Янтарь</span></button>
+					</div>
+				</div>
+
+				<div class="card">
+					<h3>Эффекты интерфейса и интеграции</h3>
+					<label class="check"><input type="checkbox" id="set-bgglow" checked /> Анимированное свечение фона (Mesh Gradient)</label>
+					<label class="check"><input type="checkbox" id="set-starfield" checked /> Интерактивное звёздное поле (Starfield Canvas с курсором)</label>
+					<label class="check"><input type="checkbox" id="set-sounds" checked /> Звуковые микро-эффекты кликов и запуска (Web Audio)</label>
+					<label class="check"><input type="checkbox" id="set-discord" checked /> Discord Rich Presence (демонстрация статуса и сборки в Discord)</label>
+					<label class="field" style="margin-top: 10px;">
+						<span class="field__label">Свой Discord Application ID (Client ID)</span>
+						<input class="input" id="set-discord-id" placeholder="Встроенное приложение Lunacy Visuals" />
+						<span class="muted small">Оставь поле пустым для встроенного Rich Presence Lunacy Visuals. Свой Discord Application ID можно указать при необходимости.</span>
+					</label>
+				</div>
+
+				<div class="card">
+					<h3>Масштаб интерфейса</h3>
+					<div class="segmented" id="set-scale">
+						<button class="seg" data-scale="90">90%</button>
+						<button class="seg is-active" data-scale="100">100%</button>
+						<button class="seg" data-scale="110">110%</button>
+						<button class="seg" data-scale="125">125%</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Секция 5: Сеть и Зеркала -->
+			<div class="settings-pane" data-setpane="network">
+				<div class="card">
+					<h3>Потоки скачивания</h3>
+					<p class="muted small">Количество одновременных соединений при скачивании библиотек и ресурсов игры.</p>
+					<div class="segmented" id="set-threads">
+						<button class="seg" data-threads="1">1 поток</button>
+						<button class="seg is-active" data-threads="3">3 потока (Рекомендовано)</button>
+						<button class="seg" data-threads="5">5 потоков</button>
+						<button class="seg" data-threads="8">8 потоков</button>
+					</div>
+				</div>
+
+				<div class="card">
+					<h3>Зеркало загрузки ресурсов Minecraft</h3>
+					<p class="muted small">Если официальные серверы Mojang работают медленно или блокируются провайдером, используйте ускоренное зеркало BMCLAPI.</p>
+					<select class="input" id="set-mirror">
+						<option value="mojang">Официальные серверы Mojang (По умолчанию)</option>
+						<option value="bmclapi">BMCLAPI — Ускоренное зеркало (СНГ/РФ)</option>
+					</select>
+				</div>
+
+				<div class="card">
+					<h3>Автоматические обновления</h3>
+					<label class="check"><input type="checkbox" id="set-autoupd" checked /> Проверять обновления лаунчера при старте</label>
+					<label class="check"><input type="checkbox" id="set-automod" checked /> Автоматически следить за обновлениями мода Lunacy Visuals</label>
+				</div>
+			</div>
+
+			<!-- Секция 6: Диагностика ПК -->
+			<div class="settings-pane" data-setpane="diagnostics">
+				<div class="card">
+					<div class="card__head">
+						<h3>Характеристики компьютера</h3>
+						<button class="btn btn--small btn--primary" id="btn-run-diagnostics">Проверить соединение с API</button>
+					</div>
+					<div class="list" id="sysinfo"></div>
+				</div>
+
+				<div class="card" id="diag-results-card" hidden>
+					<h3>Результаты экспресс-диагностики</h3>
+					<div class="list" id="diag-results-list"></div>
+				</div>
+			</div>
+
+			<div class="settings-save-bar">
+				<div class="settings-save-bar__info">
+					<span class="settings-save-bar__dot"></span>
+					<span class="muted small" id="settings-status-hint">Изменения применяются сразу после сохранения</span>
+				</div>
+				<div class="row" style="gap: 12px;">
+					<button class="btn btn--ghost" id="btn-reset" title="Вернуть стандартные настройки">Сбросить настройки</button>
+					<button class="btn btn--primary" id="btn-save">
+						<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+						<span>Сохранить изменения</span>
+					</button>
+				</div>
+			</div>
+		</section>
+
+	</main>
+</section>
+
+<!-- ================================================= МОДАЛКА ВЫБОРА ВЕРСИИ -->
+<div class="modal" id="picker" hidden>
+	<div class="modal__backdrop" data-picker-close></div>
+	<div class="modal__box">
+		<div class="modal__head">
+			<h3 id="picker-title">Выбор версии</h3>
+			<button class="winbtn winbtn--danger" data-picker-close>&#10005;</button>
+		</div>
+		<input class="input" id="picker-search" placeholder="Быстрый поиск версии (например: 1.21.4)…" />
+		<div class="tiles" id="picker-list"></div>
+		<p class="muted small" id="picker-hint"></p>
+	</div>
+</div>
+
+<!-- ================================================= МОДАЛКА ДЕТАЛЕЙ МОДА -->
+<div class="modal" id="mod-modal" hidden>
+	<div class="modal__backdrop" data-modmodal-close></div>
+	<div class="modal__box modal__box--large">
+		<div class="modal__head">
+			<div class="row">
+				<img class="mod-modal__icon" id="mod-modal-icon" src="" alt="" />
+				<div>
+					<h3 id="mod-modal-title">Название проекта</h3>
+					<div class="muted small" id="mod-modal-author">Автор</div>
+				</div>
+			</div>
+			<button class="winbtn winbtn--danger" data-modmodal-close>&#10005;</button>
+		</div>
+		<div class="mod-modal__body">
+			<div class="mod-modal__gallery" id="mod-modal-gallery"></div>
+			<div class="mod-modal__desc" id="mod-modal-desc"></div>
+		</div>
+		<div class="modal__foot row row--between">
+			<div class="row">
+				<span class="pill" id="mod-modal-downloads">0 скачиваний</span>
+				<span class="pill" id="mod-modal-license">Лицензия</span>
+			</div>
+			<div class="row">
+				<button class="btn btn--ghost" id="btn-mod-modal-web">Страница на Modrinth ↗</button>
+				<button class="btn btn--primary" id="btn-mod-modal-install">Установить в сборку</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ================================================= МОДАЛКА ПРОСМОТРА СКРИНШОТА -->
+<div class="modal" id="screenshot-modal" hidden>
+	<div class="modal__backdrop" data-scmodal-close></div>
+	<div class="modal__box modal__box--large modal__box--sc">
+		<div class="modal__head">
+			<div>
+				<h3 id="sc-modal-title">Снимок экрана</h3>
+				<div class="muted small" id="sc-modal-meta">—</div>
+			</div>
+			<button class="winbtn winbtn--danger" data-scmodal-close>&#10005;</button>
+		</div>
+		<div class="sc-modal__body">
+			<img class="sc-modal__image" id="sc-modal-img" src="" alt="Скриншот" />
+		</div>
+		<div class="modal__foot row row--between">
+			<button class="btn btn--danger btn--ghost" id="btn-sc-delete">Удалить снимок</button>
+			<div class="row">
+				<button class="btn btn--ghost" id="btn-sc-open-folder">Папка со скриншотами</button>
+				<button class="btn btn--primary" id="btn-sc-open-ext">Открыть в просмотрщике ↗</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ================================================= МОДАЛКА ВВОДА ТЕКСТА (ПРОМПТ) -->
+<div class="modal" id="input-modal" hidden>
+	<div class="modal__backdrop" data-inputmodal-close></div>
+	<div class="modal__box" style="max-width: 440px;">
+		<div class="modal__head">
+			<h3 id="input-modal-title">Ввод данных</h3>
+			<button class="winbtn winbtn--danger" data-inputmodal-close>&#10005;</button>
+		</div>
+		<form id="input-modal-form" style="display:flex;flex-direction:column;gap:14px;margin-top:10px;">
+			<div class="muted small" id="input-modal-hint"></div>
+			<input type="text" class="input" id="input-modal-value" autocomplete="off" />
+			<div class="modal__foot row row--between" style="padding-top:8px;">
+				<button type="button" class="btn btn--ghost" data-inputmodal-close>Отмена</button>
+				<button type="submit" class="btn btn--primary" id="input-modal-submit">Подтвердить</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- Тост-уведомления -->
+<div class="toast" id="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

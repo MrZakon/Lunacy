@@ -1,0 +1,152 @@
+{
+    "enable": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:enable"
+        ]
+    },
+    "disable": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:disable"
+        ]
+    },
+    "critical": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:critical"
+        ]
+    },
+    "clickgui_open": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:clickgui_open"
+        ]
+    },
+    "bell": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:bell"
+        ]
+    },
+    "crime": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:crime"
+        ]
+    },
+    "nya": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:nya"
+        ]
+    },
+    "uwu": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:uwu"
+        ]
+    },
+    "hellodragons": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:hellodragons"
+        ]
+    },
+    "krithealth_lechisy": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:krithealth_lechisy"
+        ]
+    },
+    "molodec_ubil": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:molodec_ubil"
+        ]
+    },
+    "unichtozjen": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:unichtozjen"
+        ]
+    },
+    "zapen": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:zapen"
+        ]
+    },
+    "vcheli": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:vcheli"
+        ]
+    },
+    "respawn": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:respawn"
+        ]
+    },
+    "next_raz_povezyo": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:next_raz_povezyo"
+        ]
+    },
+    "snes_totema": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:snes_totema"
+        ]
+    },
+    "multikill": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:multikill"
+        ]
+    },
+    "neostonovim": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:neostonovim"
+        ]
+    },
+    "dabkill": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:dabkill"
+        ]
+    },
+    "dota_double_kill": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:dota_double_kill"
+        ]
+    },
+    "dota_triple_kill": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:dota_triple_kill"
+        ]
+    },
+    "dota_mega_kill": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:dota_mega_kill"
+        ]
+    },
+    "dota_monster_kill": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:dota_monster_kill"
+        ]
+    },
+    "dota_rampage": {
+        "category": "master",
+        "sounds": [
+            "lunacyvisuals:dota_rampage"
+        ]
+    }
+}

@@ -1,0 +1,37 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.lunacy.visuals.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "lunacyvisuals.refmap.json",
+  "client": [
+    "KeyboardMixin",
+    "CameraMixin",
+    "ItemInspectRendererMixin",
+    "MouseMixin",
+    "InGameHudMixin",
+    "BossBarHudAccessor",
+    "SplashOverlayMixin",
+    "TitleScreenRedirectMixin",
+    "GameMenuScreenRedirectMixin",
+    "MultiplayerScreenRedirectMixin",
+    "ScreenBackgroundMixin",
+    "SelectWorldScreenAccessor",
+    "PressableWidgetMixin",
+    "SliderWidgetMixin",
+    "TextFieldWidgetMixin",
+    "TextWidgetMixin",
+    "EntryListWidgetMixin",
+    "EntryListWidgetEntryAccessor",
+    "CheckboxWidgetMixin",
+    "OptionsMixin",
+    "HandledScreenAccessor",
+    "HandledScreenMixin",
+    "InGameOverlayRendererMixin",
+    "ChatScreenMixin",
+    "ChatHudMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
